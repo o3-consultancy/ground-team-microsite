@@ -63,32 +63,47 @@
           <p class="text-xs text-neutral-dark2 mt-1">Collect & swap</p>
         </router-link>
 
-        <router-link to="/health" class="action-card">
+        <router-link to="/delivery" class="action-card">
           <div class="action-icon bg-accent-coral/10 text-accent-coral">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
             </svg>
           </div>
-          <h3 class="font-semibold text-neutral-dark1 mt-3">API Health</h3>
-          <p class="text-xs text-neutral-dark2 mt-1">Check status</p>
+          <h3 class="font-semibold text-neutral-dark1 mt-3">Delivery</h3>
+          <p class="text-xs text-neutral-dark2 mt-1">Bulk delivery</p>
         </router-link>
       </div>
 
-      <!-- Recent Activity Section (Future Enhancement) -->
+      <!-- Today's Summary -->
       <div class="mt-8">
         <h2 class="text-lg font-semibold text-neutral-dark1 mb-4">Today's Summary</h2>
-        <div class="card">
+
+        <div v-if="statsLoading" class="card text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
+          <p class="text-sm text-neutral-dark2 mt-2">Loading statistics...</p>
+        </div>
+
+        <div v-else-if="statsError" class="card">
+          <div class="text-center py-4">
+            <p class="text-sm text-red-600 mb-3">{{ statsError }}</p>
+            <button @click="loadStats" class="btn btn-secondary">
+              Try Again
+            </button>
+          </div>
+        </div>
+
+        <div v-else-if="stats" class="card">
           <div class="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p class="text-2xl font-bold text-primary-blue">-</p>
+              <p class="text-2xl font-bold text-primary-blue">{{ stats.signups?.count || 0 }}</p>
               <p class="text-xs text-neutral-dark2 mt-1">Signups</p>
             </div>
             <div>
-              <p class="text-2xl font-bold text-primary-green">-</p>
+              <p class="text-2xl font-bold text-primary-green">{{ stats.deployments?.count || 0 }}</p>
               <p class="text-xs text-neutral-dark2 mt-1">Deployments</p>
             </div>
             <div>
-              <p class="text-2xl font-bold text-accent-aqua">-</p>
+              <p class="text-2xl font-bold text-accent-aqua">{{ stats.collections?.count || 0 }}</p>
               <p class="text-xs text-neutral-dark2 mt-1">Collections</p>
             </div>
           </div>
@@ -99,16 +114,49 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
+import { getTodayStats } from '../services/api'
 
 const router = useRouter()
 const { user, logout } = useAuth()
+
+// Today's Stats
+const stats = ref(null)
+const statsLoading = ref(false)
+const statsError = ref('')
+
+async function loadStats() {
+  if (!user.value?.userId) {
+    return
+  }
+
+  statsLoading.value = true
+  statsError.value = ''
+
+  try {
+    const { data } = await getTodayStats(user.value.userId, {
+      timezone: 'Asia/Dubai'
+    })
+
+    stats.value = data.stats
+  } catch (err) {
+    console.error('Error loading today stats:', err)
+    statsError.value = err.response?.data?.detail || err.message || 'Failed to load statistics'
+  } finally {
+    statsLoading.value = false
+  }
+}
 
 function handleLogout() {
   logout()
   router.push('/login')
 }
+
+onMounted(() => {
+  loadStats()
+})
 </script>
 
 <style scoped>
