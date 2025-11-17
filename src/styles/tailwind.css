@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.card {
+    @apply bg-white rounded-2xl p-6 shadow-soft;
+}
+
+.btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold transition;
+}
+
+.btn-primary {
+    @apply bg-primary-green text-primary-blue hover:bg-primary-greenTint;
+}
+
+.btn-secondary {
+    @apply bg-primary-blueTint text-white hover:bg-primary-blue;
+}
+
+.input {
+    @apply w-full rounded-xl border border-neutral-card bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-accent-aqua;
+}
+
+.label {
+    @apply block text-sm text-neutral-dark2 mb-1;
+}
