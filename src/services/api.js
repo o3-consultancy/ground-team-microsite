@@ -160,4 +160,33 @@ export function verifyQR(containerId, sig) {
     return api.get('/qr/verify', { params: { containerId, sig } })
 }
 
+/** DELIVERIES */
+export function getPendingDeliverySummary(assignedTo) {
+    return api.get('/deliveries/pending-summary', { params: { assignedTo } })
+}
+export function verifyStaff(employeeNumber) {
+    return api.post('/deliveries/verify-staff', { employeeNumber })
+}
+export function completeDelivery(payload) {
+    // { staffId, staffName, truckNumber, assignedTo, comments? }
+    return api.post('/deliveries/complete', payload)
+}
+export function getDeliveryHistory(params = {}) {
+    return api.get('/deliveries/history', { params })
+}
+
+/** STATS */
+export function getTodayStats(assignedTo, options = {}) {
+    const params = {
+        assignedTo,
+        timezone: options.timezone || 'Asia/Dubai'
+    }
+
+    if (options.date) {
+        params.date = options.date
+    }
+
+    return api.get('/stats/today', { params })
+}
+
 export default api
