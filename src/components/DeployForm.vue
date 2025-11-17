@@ -183,7 +183,7 @@
               <p class="text-xs text-neutral-dark2 mt-1">{{ deployment.householdAddress }}</p>
               <div class="flex items-center gap-4 mt-2 text-xs">
                 <span class="text-neutral-dark2">
-                  <strong>Container:</strong> {{ deployment.installedContainerId || 'N/A' }}
+                  <strong>Container:</strong> {{ deployment.containerId || deployment.installedContainerId || 'N/A' }}
                 </span>
                 <span class="text-neutral-dark2">
                   <strong>Completed:</strong> {{ formatDate(deployment.performedAt) }}
@@ -308,10 +308,10 @@ async function loadCompletedDeployments() {
     const userId = user.value?.userId;
     if (!userId) return;
 
+    // Fetch actual deployment records (not tasks) to get container ID and completion time
     const { data } = await listDeployments({
-      assignedTo: userId,
-      type: 'deployment_task',
-      status: 'completed',
+      performedBy: userId,  // Use performedBy instead of assignedTo for actual deployments
+      type: 'deployment',   // Fetch actual deployments, not tasks
       sortBy: 'performedAt',
       sortDir: 'desc',
       limit: 20
